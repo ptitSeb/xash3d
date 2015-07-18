@@ -831,7 +831,7 @@ void VID_StartupGamma( void )
 	// init gamma ramp
 	Q_memset( glState.stateRamp, 0, gammaTypeSize);
 
-#if defined(XASH_SDL)
+#if !defined (__ANDROID__) && defined(XASH_SDL) && !defined(PANDORA)
 	glConfig.deviceSupportsGamma = !SDL_GetWindowGammaRamp( host.hWnd, NULL, NULL, NULL);
 #endif
 
