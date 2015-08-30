@@ -796,7 +796,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 		Setup_LDT_Keeper( ); // Must call before any thread creating
 #endif
 
-#ifdef XASH_SDL
+#if defined(XASH_SDL) && !defined(PANDORA)
 	if( SDL_Init( SDL_INIT_VIDEO |
 				SDL_INIT_TIMER |
 				SDL_INIT_AUDIO |
@@ -813,6 +813,9 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 	}
 	else
 	{
+		#if defined(PANDORA)
+		Q_strncpy( host.rootdir, ".", sizeof( host.rootdir ) );
+		#else
 		#if defined(XASH_SDL)
 		if( !(baseDir = SDL_GetBasePath()) )
 			Sys_Error( "couldn't determine current directory: %s", SDL_GetError() );
@@ -820,6 +823,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 		#else
 		if( !getcwd(host.rootdir, sizeof(host.rootdir) ) )
 			host.rootdir[0] = 0;
+		#endif
 		#endif
 	}
 
@@ -929,7 +933,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 	FS_LoadGameInfo( NULL );
 	Q_strncpy( host.gamefolder, GI->gamefolder, sizeof( host.gamefolder ));
 
-
+#ifndef PANDORA
 	if( GI->secure )
 	{
 		// clear all developer levels when game is protected
@@ -937,7 +941,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 		host.developer = host.old_developer = 0;
 		host.con_showalways = false;
 	}
-
+#endif
 	HPAK_Init();
 
 	IN_Init();

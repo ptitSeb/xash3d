@@ -15,8 +15,7 @@ GNU General Public License for more details.
 
 
 #ifdef XASH_SDL
-#include <SDL_main.h>
-#include <SDL_messagebox.h>
+#include <SDL.h>
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -129,6 +128,17 @@ int main( int argc, char **argv )
 #else
 	szArgc = argc;
 	szArgv = argv;
+#endif
+#ifdef PANDORA
+	if( SDL_Init( SDL_INIT_VIDEO |
+				SDL_INIT_TIMER |
+				SDL_INIT_AUDIO |
+				SDL_INIT_JOYSTICK |
+				SDL_INIT_EVENTS ))
+	{
+		Xash_Error( "Error on SDL_Init" );
+		return 0;
+	}
 #endif
 
 	Sys_LoadEngine();
