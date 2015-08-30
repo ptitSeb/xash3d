@@ -37,7 +37,11 @@ if(XASH_SDL)
 	add_definitions(-DXASH_SDL)
 endif()
 
-set (XASH_LAUNCHER_EXECUTABLE xash3d)
+if(PANDORA)
+	set (XASH_LAUNCHER_EXECUTABLE ../xash3d)
+else()
+	set (XASH_LAUNCHER_EXECUTABLE xash3d)
+endif()
 
 file (GLOB XASH_LAUNCHER_SOURCES *.c)
 

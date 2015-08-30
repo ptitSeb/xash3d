@@ -74,6 +74,15 @@ void *Com_LoadLibrary( const char *dllname, int build_ordinals_table )
 	else
 #endif
 	pHandle = dlopen( dllname, RTLD_LAZY );
+#endif
+#ifdef PANDORA
+printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
+	if(!pHandle) {
+		char* tmp=strrchr(dllname, '/');
+		if(tmp) pHandle = dlopen( ++tmp, RTLD_LAZY );	
+printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
+	}
+#endif
 	if(!pHandle)
 	{
 		search = FS_FindFile( dllname, &pack_ind, true );
@@ -919,6 +928,7 @@ void *Com_LoadLibraryExt( const char *dllname, int build_ordinals_table, qboolea
 	dll_user_t *hInst;
 
 	hInst = FS_FindLibrary( dllname, directpath );
+printf("FS_Getc(\"%s\", %d) = %p\n", dllname, directpath, hInst);
 	if( !hInst ) 
 		return NULL; // nothing to load
 		
