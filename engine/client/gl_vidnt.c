@@ -1518,8 +1518,9 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 		SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_OPENGL;
 
 	Q_strncpy( wndname, GI->title, sizeof( wndname ));
-
+#ifndef PANDORA
 	if( fullscreen )
+#endif
 	{
 		wndFlags |= SDL_WINDOW_FULLSCREEN;
 	}
