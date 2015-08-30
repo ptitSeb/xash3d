@@ -1027,6 +1027,176 @@ qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
 	return true;
 }
 
+void R_SaveVideoMode( int vid_mode )
+{
+	int	mode = bound( 0, vid_mode, num_vidmodes ); // check range
+#ifndef __ANDROID__
+	glState.width = vidmode[mode].width;
+	glState.height = vidmode[mode].height;
+	glState.wideScreen = vidmode[mode].wideScreen;
+
+	Cvar_FullSet( "width", va( "%i", vidmode[mode].width ), CVAR_READ_ONLY );
+	Cvar_FullSet( "height", va( "%i", vidmode[mode].height ), CVAR_READ_ONLY );
+	Cvar_SetFloat( "vid_mode", mode ); // merge if it out of bounds
+
+	MsgDev( D_INFO, "Set: %s [%dx%d]\n", vidmode[mode].desc, vidmode[mode].width, vidmode[mode].height );
+#else
+	// Auto-detect of screen size on Android Devices
+#ifdef XASH_SDL
+	SDL_DisplayMode displayMode;
+
+	SDL_GetCurrentDisplayMode(0, &displayMode);
+
+	glState.width = displayMode.w;
+	glState.height = displayMode.h;
+#else
+	Android_GetScreenRes(&glState.width, &glState.height);
+	//glState.width = glState.height = 600;
+#endif
+	glState.wideScreen = true;
+
+	Cvar_FullSet( "width", va( "%i", glState.width ), CVAR_READ_ONLY );
+	Cvar_FullSet( "height", va( "%i", glState.height ), CVAR_READ_ONLY );
+	Cvar_SetFloat( "vid_mode", mode );
+
+	MsgDev( D_INFO, "Set: [%dx%d]\n", glState.width, glState.height );
+#endif
+}
+
+qboolean R_DescribeVIDMode( int width, int height )
+{
+	int	i;
+
+	for( i = 0; i < sizeof( vidmode ) / sizeof( vidmode[0] ); i++ )
+	{
+		if( vidmode[i].width == width && vidmode[i].height == height )
+		{
+			// found specified mode
+			Cvar_SetFloat( "vid_mode", i );
+			return true;
+		}
+	}
+
+	return false;
+}
+
+qboolean VID_CreateWindow( int width, int height, qboolean fullscreen )
+{
+#ifdef XASH_SDL
+	static string	wndname;
+	Uint32 wndFlags = SDL_WINDOW_INPUT_GRABBED |
+		SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_OPENGL;
+
+	Q_strncpy( wndname, GI->title, sizeof( wndname ));
+#ifndef PANDORA
+	if( fullscreen )
+#endif
+	{
+		wndFlags |= SDL_WINDOW_FULLSCREEN;
+	}
+
+	host.hWnd = SDL_CreateWindow(wndname, SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED, width, height, wndFlags);
+
+	// host.hWnd must be filled in IN_WndProc
+	if( !host.hWnd )
+	{
+		MsgDev( D_ERROR, "VID_CreateWindow: couldn't create '%s': %s\n", wndname, SDL_GetError());
+		return false;
+	}
+
+	host.window_center_x = width / 2;
+	host.window_center_y = height / 2;
+
+#if defined(__ANDROID__)
+	// TODO: Find a way to change icon in runtime in Android
+#elif defined(_WIN32)
+	HICON ico;
+
+	if( FS_FileExists( GI->iconpath, true ))
+	{
+		char	localPath[MAX_PATH];
+
+		Q_snprintf( localPath, sizeof( localPath ), "%s/%s", GI->gamedir, GI->iconpath );
+		ico = LoadImage( NULL, localPath, IMAGE_ICON, 0, 0, LR_LOADFROMFILE|LR_DEFAULTSIZE );
+
+		if( !ico )
+		{
+			MsgDev( D_INFO, "Extract %s from pak if you want to see it.\n", GI->iconpath );
+			ico = LoadIcon( host.hInst, MAKEINTRESOURCE( 101 ));
+		}
+	}
+	else ico = LoadIcon( host.hInst, MAKEINTRESOURCE( 101 ));
+
+	SDL_SysWMinfo info;
+	if(SDL_GetWindowWMInfo(host.hWnd, &info))
+	{
+		// info.info.info.info.info... Holy shit, SDL?
+		SetClassLong(info.info.win.window, GCL_HICON, ico);
+	}
+
+#else
+	SDL_Surface *ico;
+
+#ifdef _WIN32
+	// find the icon file in the filesystem
+	if( FS_FileExists( GI->iconpath, true ))
+	{
+		char	localPath[MAX_SYSPATH];
+
+		Q_snprintf( localPath, sizeof( localPath ), "%s/%s", GI->gamedir, GI->iconpath );
+
+		ico = IMG_Load(localPath);
+
+		if( !ico )
+		{
+			MsgDev( D_INFO, "Failed load icon: %s\n", SDL_GetError());
+			MsgDev( D_INFO, "Try to extract %s from pak if you want to see it.\n", GI->iconpath );
+			ico = NULL;
+		}
+	}
+	else 
+#endif
+	ico = NULL;
+
+	// ico is NULL because there is no resource for standart icon. Sorry about that.
+	if(ico) SDL_SetWindowIcon(host.hWnd, ico);
+#endif
+
+	SDL_ShowWindow( host.hWnd );
+
+	// init all the gl stuff for the window
+	if( !GL_SetPixelformat( ))
+	{
+		SDL_HideWindow( host.hWnd );
+		SDL_DestroyWindow( host.hWnd );
+		host.hWnd = NULL;
+
+		MsgDev( D_ERROR, "OpenGL driver not installed\n" );
+
+		return false;
+	}
+#else
+	host.hWnd = 1; //fake window
+	GL_SetPixelformat( );
+	host.window_center_x = width / 2;
+	host.window_center_y = height / 2;
+#endif
+	if( !glw_state.initialized )
+	{
+		if( !GL_CreateContext( ))
+			return false;
+
+		VID_StartupGamma();
+	}
+	else
+	{
+		if( !GL_UpdateContext( ))
+			return false;		
+	}
+	return true;
+}
+
 void VID_DestroyWindow( void )
 {
 #ifdef XASH_SDL
