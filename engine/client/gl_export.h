@@ -1125,7 +1125,7 @@ void ( APIENTRY *pglTexCoord4sv )(const GLshort *v);
 void ( APIENTRY *pglTexCoordPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void ( APIENTRY *pglTexEnvf )(GLenum target, GLenum pname, GLfloat param);
 void ( APIENTRY *pglTexEnvfv )(GLenum target, GLenum pname, const GLfloat *params);
-#if defiend(PANDORA) || defined(RPI)
+#if defined(PANDORA) || defined(RPI)
 void ( APIENTRY *pandoglTexEnvi )(GLenum target, GLenum pname, GLint param);
 void pglTexEnvi(GLenum target, GLenum pname, GLint param);
 #else
