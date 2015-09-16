@@ -38,12 +38,388 @@ typedef enum
 	rserr_unknown
 } rserr_t;
 
+typedef struct vidmode_s
+{
+	const char	*desc;
+	int		width; 
+	int		height;
+	qboolean		wideScreen;
+} vidmode_t;
+
+vidmode_t vidmode[] =
+{
+{ "Mode  0: 4x3",	640,	480,	false	},
+{ "Mode  1: 4x3",	800,	600,	false	},
+{ "Mode  2: 4x3",	960,	720,	false	},
+{ "Mode  3: 4x3",	1024,	768,	false	},
+{ "Mode  4: 4x3",	1152,	864,	false	},
+{ "Mode  5: 4x3",	1280,	800,	false	},
+{ "Mode  6: 4x3",	1280,	960,	false	},
+{ "Mode  7: 4x3",	1280,	1024,	false	},
+{ "Mode  8: 4x3",	1600,	1200,	false	},
+{ "Mode  9: 4x3",	2048,	1536,	false	},
+{ "Mode 10: 16x9",	800,	480,	true	},
+{ "Mode 11: 16x9",	856,	480,	true	},
+{ "Mode 12: 16x9",	960,	540,	true	},
+{ "Mode 13: 16x9",	1024,	576,	true	},
+{ "Mode 14: 16x9",	1024,	600,	true	},
+{ "Mode 15: 16x9",	1280,	720,	true	},
+{ "Mode 16: 16x9",	1360,	768,	true	},
+{ "Mode 17: 16x9",	1366,	768,	true	},
+{ "Mode 18: 16x9",	1440,	900,	true	},
+{ "Mode 19: 16x9",	1680,	1050,	true	},
+{ "Mode 20: 16x9",	1920,	1080,	true	},
+{ "Mode 21: 16x9",	1920,	1200,	true	},
+{ "Mode 22: 16x9",	2560,	1600,	true	},
+{ "Mode 23: 16x9",	1600,	900,	true	},
+};
+
+#ifdef __ANDROID__
+
+static char* opengl_110funcs[] =
+{
+ "glClearColor"         ,
+ "glClear"              ,
+ "glAlphaFunc"          ,
+ "glBlendFunc"          ,
+ "glCullFace"           ,
+ "glDrawBuffer"         ,
+ "glReadBuffer"         ,
+ "glEnable"             ,
+ "glDisable"            ,
+ "glEnableClientState"  ,
+ "glDisableClientState" ,
+ "glGetBooleanv"        ,
+ "glGetDoublev"         ,
+ "glGetFloatv"          ,
+ "glGetIntegerv"        ,
+ "glGetError"           ,
+ "glGetString"          ,
+ "glFinish"             ,
+ "glFlush"              ,
+ "glClearDepth"         ,
+ "glDepthFunc"          ,
+ "glDepthMask"          ,
+ "glDepthRange"         ,
+ "glFrontFace"          ,
+ "glDrawElements"       ,
+ "glColorMask"          ,
+ "glIndexPointer"       ,
+ "glVertexPointer"      ,
+ "glNormalPointer"      ,
+ "glColorPointer"       ,
+ "glTexCoordPointer"    ,
+ "glArrayElement"       ,
+ "glColor3f"            ,
+ "glColor3fv"           ,
+ "glColor4f"            ,
+ "glColor4fv"           ,
+ "glColor3ub"           ,
+ "glColor4ub"           ,
+ "glColor4ubv"          ,
+ "glTexCoord1f"         ,
+ "glTexCoord2f"         ,
+ "glTexCoord3f"         ,
+ "glTexCoord4f"         ,
+ "glTexGenf"            ,
+ "glTexGenfv"           ,
+ "glTexGeni"            ,
+ "glVertex2f"           ,
+ "glVertex3f"           ,
+ "glVertex3fv"          ,
+ "glNormal3f"           ,
+ "glNormal3fv"          ,
+ "glBegin"              ,
+ "glEnd"                ,
+ "glLineWidth"          ,
+ "glPointSize"          ,
+ "glMatrixMode"         ,
+ "glOrtho"              ,
+ "glRasterPos2f"        ,
+ "glFrustum"            ,
+ "glViewport"           ,
+ "glPushMatrix"         ,
+ "glPopMatrix"          ,
+ "glPushAttrib"         ,
+ "glPopAttrib"          ,
+ "glLoadIdentity"       ,
+ "glLoadMatrixd"        ,
+ "glLoadMatrixf"        ,
+ "glMultMatrixd"        ,
+ "glMultMatrixf"        ,
+ "glRotated"            ,
+ "glRotatef"            ,
+ "glScaled"             ,
+ "glScalef"             ,
+ "glTranslated"         ,
+ "glTranslatef"         ,
+ "glReadPixels"         ,
+ "glDrawPixels"         ,
+ "glStencilFunc"        ,
+ "glStencilMask"        ,
+ "glStencilOp"          ,
+ "glClearStencil"       ,
+ "glIsEnabled"          ,
+ "glIsList"             ,
+ "glIsTexture"          ,
+ "glTexEnvf"            ,
+ "glTexEnvfv"           ,
+ "glTexEnvi"            ,
+ "glTexParameterf"      ,
+ "glTexParameterfv"     ,
+ "glTexParameteri"      ,
+ "glHint"               ,
+ "glPixelStoref"        ,
+ "glPixelStorei"        ,
+ "glGenTextures"        ,
+ "glDeleteTextures"     ,
+ "glBindTexture"        ,
+ "glTexImage1D"         ,
+ "glTexImage2D"         ,
+ "glTexSubImage1D"      ,
+ "glTexSubImage2D"      ,
+ "glCopyTexImage1D"     ,
+ "glCopyTexImage2D"     ,
+ "glCopyTexSubImage1D"  ,
+ "glCopyTexSubImage2D"  ,
+ "glScissor"            ,
+ "glGetTexEnviv"        ,
+ "glPolygonOffset"      ,
+ "glPolygonMode"        ,
+ "glPolygonStipple"     ,
+ "glClipPlane"          ,
+ "glGetClipPlane"       ,
+ "glShadeModel"         ,
+ "glFogfv"              ,
+ "glFogf"               ,
+ "glFogi"               ,
+ NULL
+};
+
+static char* pointparametersfunc[] =
+{
+"glPointParameterfEXT"  ,
+"glPointParameterfvEXT" ,
+NULL
+};
+
+static char* drawrangeelementsfuncs[] =
+{
+ "glDrawRangeElements" ,
+ NULL
+};
+
+static char* drawrangeelementsextfuncs[] =
+{
+ "glDrawRangeElementsEXT" ,
+ NULL
+};
+
+static char* sgis_multitexturefuncs[] =
+{
+ "glSelectTextureSGIS" ,
+ "glMTexCoord2fSGIS"   ,
+ NULL
+};
+
+static char* multitexturefuncs[] =
+{
+ "glMultiTexCoord1fARB"     ,
+ "glMultiTexCoord2fARB"     ,
+ "glMultiTexCoord3fARB"     ,
+ "glMultiTexCoord4fARB"     ,
+ "glActiveTextureARB"       ,
+ "glClientActiveTextureARB" ,
+ "glClientActiveTextureARB" ,
+ NULL
+};
+
+static char* compiledvertexarrayfuncs[] =
+{
+ "glLockArraysEXT"   ,
+ "glUnlockArraysEXT" ,
+ "glDrawArrays"      ,
+ NULL
+};
+
+static char* texture3dextfuncs[] =
+{
+ "glTexImage3DEXT"        ,
+ "glTexSubImage3DEXT"     ,
+ "glCopyTexSubImage3DEXT" ,
+ NULL
+};
+
+static char* atiseparatestencilfuncs[] =
+{
+ "glStencilOpSeparateATI"   ,
+ "glStencilFuncSeparateATI" ,
+ NULL
+};
+
+static char* gl2separatestencilfuncs[] =
+{
+ "glStencilOpSeparate"   ,
+ "glStencilFuncSeparate" ,
+ NULL
+};
+
+static char* stenciltwosidefuncs[] =
+{
+ "glActiveStencilFaceEXT" ,
+ NULL
+};
+
+static char* blendequationfuncs[] =
+{
+ "glBlendEquationEXT" ,
+ NULL
+};
+
+static char* shaderobjectsfuncs[] =
+{
+ "glDeleteObjectARB"             ,
+ "glGetHandleARB"                ,
+ "glDetachObjectARB"             ,
+ "glCreateShaderObjectARB"       ,
+ "glShaderSourceARB"             ,
+ "glCompileShaderARB"            ,
+ "glCreateProgramObjectARB"      ,
+ "glAttachObjectARB"             ,
+ "glLinkProgramARB"              ,
+ "glUseProgramObjectARB"         ,
+ "glValidateProgramARB"          ,
+ "glUniform1fARB"                ,
+ "glUniform2fARB"                ,
+ "glUniform3fARB"                ,
+ "glUniform4fARB"                ,
+ "glUniform1iARB"                ,
+ "glUniform2iARB"                ,
+ "glUniform3iARB"                ,
+ "glUniform4iARB"                ,
+ "glUniform1fvARB"               ,
+ "glUniform2fvARB"               ,
+ "glUniform3fvARB"               ,
+ "glUniform4fvARB"               ,
+ "glUniform1ivARB"               ,
+ "glUniform2ivARB"               ,
+ "glUniform3ivARB"               ,
+ "glUniform4ivARB"               ,
+ "glUniformMatrix2fvARB"         ,
+ "glUniformMatrix3fvARB"         ,
+ "glUniformMatrix4fvARB"         ,
+ "glGetObjectParameterfvARB"     ,
+ "glGetObjectParameterivARB"     ,
+ "glGetInfoLogARB"               ,
+ "glGetAttachedObjectsARB"       ,
+ "glGetUniformLocationARB"       ,
+ "glGetActiveUniformARB"         ,
+ "glGetUniformfvARB"             ,
+ "glGetUniformivARB"             ,
+ "glGetShaderSourceARB"          ,
+ "glVertexAttribPointerARB"      ,
+ "glEnableVertexAttribArrayARB"  ,
+ "glDisableVertexAttribArrayARB" ,
+ "glBindAttribLocationARB"       ,
+ "glGetActiveAttribARB"          ,
+ "glGetAttribLocationARB"        ,
+ NULL
+};
+
+static char* vertexshaderfuncs[] =
+{
+ "glVertexAttribPointerARB"      ,
+ "glEnableVertexAttribArrayARB"  ,
+ "glDisableVertexAttribArrayARB" ,
+ "glBindAttribLocationARB"       ,
+ "glGetActiveAttribARB"          ,
+ "glGetAttribLocationARB"        ,
+ NULL
+};
+
+static char* vbofuncs[] =
+{
+ "glBindBufferARB"    ,
+ "glDeleteBuffersARB" ,
+ "glGenBuffersARB"    ,
+ "glIsBufferARB"      ,
+ "glMapBufferARB"     ,
+ "glUnmapBufferARB"   ,
+ "glBufferDataARB"    ,
+ "glBufferSubDataARB" ,
+ NULL
+};
+
+static char* occlusionfunc[] =
+{
+ "glGenQueriesARB"        ,
+ "glDeleteQueriesARB"     ,
+ "glIsQueryARB"           ,
+ "glBeginQueryARB"        ,
+ "glEndQueryARB"          ,
+ "glGetQueryivARB"        ,
+ "glGetQueryObjectivARB"  ,
+ "glGetQueryObjectuivARB" ,
+ NULL
+};
+
+static char* texturecompressionfuncs[] =
+{
+ "glCompressedTexImage3DARB"    ,
+ "glCompressedTexImage2DARB"    ,
+ "glCompressedTexImage1DARB"    ,
+ "glCompressedTexSubImage3DARB" ,
+ "glCompressedTexSubImage2DARB" ,
+ "glCompressedTexSubImage1DARB" ,
+ "glGetCompressedTexImageARB"   ,
+ NULL
+};
+#else
+#if defined(PANDORA) || defined(RPI)
+static GLenum old_texnum = 0;
+static GLenum old_sfactor = 0;
+static GLenum old_dfactor = 0;
+static GLenum old_target = 0;
+static GLenum old_pname = 0;
+static GLint old_param = 0;
+static GLenum old_texenvi = 0;
+void pglBlendFunc(GLenum sfactor, GLenum dfactor)
+{
+	if ((old_sfactor != sfactor) || (old_dfactor!=dfactor)) {
+		old_sfactor = sfactor;
+		old_dfactor = dfactor;
+		pandoglBlendFunc(sfactor, dfactor);
+	}
+}
+void pglTexEnvi(GLenum target, GLenum pname, GLint param) {
+	// very basic wrapper, mainly to not call MODULATE over and over....
+	if ((old_target != target) || (old_pname != pname) || (old_param != param) || (old_texnum != old_texenvi) || (param == GL_MODULATE)) 
+	{
+		old_target = target;
+		old_pname = pname;
+		old_param = param;
+		old_texenvi = old_texnum;	// yeah, bad choice of name here...
+		pandoglTexEnvi(target, pname, param);
+	}
+}
+void pglActiveTextureARB( GLenum texnum ) {
+	if (old_texnum != texnum) {
+		old_texnum = texnum;
+		pandoglActiveTextureARB(texnum);
+	}
+}
+#endif
+
 static dllfunc_t opengl_110funcs[] =
 {
 { "glClearColor"         , (void **)&pglClearColor },
 { "glClear"              , (void **)&pglClear },
 { "glAlphaFunc"          , (void **)&pglAlphaFunc },
+#if defined(PANDORA) || defined(RPI)
+{ "glBlendFunc"          , (void **)&pandoglBlendFunc },
+#else
 { "glBlendFunc"          , (void **)&pglBlendFunc },
+#endif
 { "glCullFace"           , (void **)&pglCullFace },
 { "glDrawBuffer"         , (void **)&pglDrawBuffer },
 { "glReadBuffer"         , (void **)&pglReadBuffer },
@@ -126,7 +502,11 @@ static dllfunc_t opengl_110funcs[] =
 { "glIsTexture"          , (void **)&pglIsTexture },
 { "glTexEnvf"            , (void **)&pglTexEnvf },
 { "glTexEnvfv"           , (void **)&pglTexEnvfv },
+#if defined(PANDORA) || defined(RPI)
+{ "glTexEnvi"            , (void **)&pandoglTexEnvi },
+#else
 { "glTexEnvi"            , (void **)&pglTexEnvi },
+#endif
 { "glTexParameterf"      , (void **)&pglTexParameterf },
 { "glTexParameterfv"     , (void **)&pglTexParameterfv },
 { "glTexParameteri"      , (void **)&pglTexParameteri },
@@ -190,7 +570,11 @@ static dllfunc_t multitexturefuncs[] =
 { "glMultiTexCoord2fARB"     , (void **)&pglMultiTexCoord2f },
 { "glMultiTexCoord3fARB"     , (void **)&pglMultiTexCoord3f },
 { "glMultiTexCoord4fARB"     , (void **)&pglMultiTexCoord4f },
+#if defined(PANDORA) || defined(RPI)
+{ "glActiveTextureARB"       , (void **)&pandoglActiveTextureARB },
+#else
 { "glActiveTextureARB"       , (void **)&pglActiveTextureARB },
+#endif
 { "glClientActiveTextureARB" , (void **)&pglClientActiveTexture },
 { "glClientActiveTextureARB" , (void **)&pglClientActiveTextureARB },
 { NULL, NULL }

@@ -840,7 +840,12 @@ void ( APIENTRY *pglArrayElement )(GLint i);
 void ( APIENTRY *pglBegin )(GLenum mode);
 void ( APIENTRY *pglBindTexture )(GLenum target, GLuint texture);
 void ( APIENTRY *pglBitmap )(GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig, GLfloat xmove, GLfloat ymove, const GLubyte *bitmap);
+#if defined(PANDORA) || defined(RPI)
+void ( APIENTRY *pandoglBlendFunc )(GLenum sfactor, GLenum dfactor);
+void pglBlendFunc(GLenum sfactor, GLenum dfactor);	// wrapper  to avoid multiple useless calls
+#else
 void ( APIENTRY *pglBlendFunc )(GLenum sfactor, GLenum dfactor);
+#endif
 void ( APIENTRY *pglCallList )(GLuint list);
 void ( APIENTRY *pglCallLists )(GLsizei n, GLenum type, const GLvoid *lists);
 void ( APIENTRY *pglClear )(GLbitfield mask);
@@ -1120,7 +1125,12 @@ void ( APIENTRY *pglTexCoord4sv )(const GLshort *v);
 void ( APIENTRY *pglTexCoordPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void ( APIENTRY *pglTexEnvf )(GLenum target, GLenum pname, GLfloat param);
 void ( APIENTRY *pglTexEnvfv )(GLenum target, GLenum pname, const GLfloat *params);
+#if defiend(PANDORA) || defined(RPI)
+void ( APIENTRY *pandoglTexEnvi )(GLenum target, GLenum pname, GLint param);
+void pglTexEnvi(GLenum target, GLenum pname, GLint param);
+#else
 void ( APIENTRY *pglTexEnvi )(GLenum target, GLenum pname, GLint param);
+#endif
 void ( APIENTRY *pglTexEnviv )(GLenum target, GLenum pname, const GLint *params);
 void ( APIENTRY *pglTexGend )(GLenum coord, GLenum pname, GLdouble param);
 void ( APIENTRY *pglTexGendv )(GLenum coord, GLenum pname, const GLdouble *params);
@@ -1168,7 +1178,12 @@ void ( APIENTRY *pglPointParameterfEXT)( GLenum param, GLfloat value );
 void ( APIENTRY *pglPointParameterfvEXT)( GLenum param, const GLfloat *value );
 void ( APIENTRY *pglLockArraysEXT) (int , int);
 void ( APIENTRY *pglUnlockArraysEXT) (void);
+#if defined(PANDORA) || defined(RPI)
+void ( APIENTRY *pandoglActiveTextureARB)( GLenum );
+void pglActiveTextureARB( GLenum );
+#else
 void ( APIENTRY *pglActiveTextureARB)( GLenum );
+#endif
 void ( APIENTRY *pglClientActiveTextureARB)( GLenum );
 void ( APIENTRY *pglGetCompressedTexImage)( GLenum target, GLint lod, const GLvoid* data );
 void ( APIENTRY *pglDrawRangeElements)( GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices );
