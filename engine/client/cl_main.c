@@ -149,7 +149,7 @@ qboolean CL_ChangeGame( const char *gamefolder, qboolean bReset )
 		Q_strncpy( mapname, clgame.mapname, MAX_STRING );
 		Q_strncpy( maptitle, clgame.maptitle, MAX_STRING );
 
-#ifdef PANDORA
+#if defined(PANDORA) || defined(RPI)
                 if( !CL_LoadProgs( va( "%s/" CLIENTDLL, "." )))
 #else
 		if( !CL_LoadProgs( va( "%s/%s", GI->dll_path, GI->client_lib)))

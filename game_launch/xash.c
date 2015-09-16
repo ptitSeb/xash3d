@@ -129,7 +129,7 @@ int main( int argc, char **argv )
 	szArgc = argc;
 	szArgv = argv;
 #endif
-#ifdef PANDORA
+#if defined(PANDORA) || defined(RPI)
 	if( SDL_Init( SDL_INIT_VIDEO |
 				SDL_INIT_TIMER |
 				SDL_INIT_AUDIO |

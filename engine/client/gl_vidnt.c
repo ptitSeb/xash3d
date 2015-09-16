@@ -463,13 +463,50 @@ static char* texturecompressionfuncs[] =
  NULL
 };
 #else
-
+#if defined(PANDORA) || defined(RPI)
+static GLenum old_texnum = 0;
+static GLenum old_sfactor = 0;
+static GLenum old_dfactor = 0;
+static GLenum old_target = 0;
+static GLenum old_pname = 0;
+static GLint old_param = 0;
+static GLenum old_texenvi = 0;
+void pglBlendFunc(GLenum sfactor, GLenum dfactor)
+{
+	if ((old_sfactor != sfactor) || (old_dfactor!=dfactor)) {
+		old_sfactor = sfactor;
+		old_dfactor = dfactor;
+		pandoglBlendFunc(sfactor, dfactor);
+	}
+}
+void pglTexEnvi(GLenum target, GLenum pname, GLint param) {
+	// very basic wrapper, mainly to not call MODULATE over and over....
+	if ((old_target != target) || (old_pname != pname) || (old_param != param) || (old_texnum != old_texenvi) || (param == GL_MODULATE)) 
+	{
+		old_target = target;
+		old_pname = pname;
+		old_param = param;
+		old_texenvi = old_texnum;	// yeah, bad choice of name here...
+		pandoglTexEnvi(target, pname, param);
+	}
+}
+void pglActiveTextureARB( GLenum texnum ) {
+	if (old_texnum != texnum) {
+		old_texnum = texnum;
+		pandoglActiveTextureARB(texnum);
+	}
+}
+#endif
 static dllfunc_t opengl_110funcs[] =
 {
 { "glClearColor"         , (void **)&pglClearColor },
 { "glClear"              , (void **)&pglClear },
 { "glAlphaFunc"          , (void **)&pglAlphaFunc },
+#if defined(PANDORA) || defined(RPI)
+{ "glBlendFunc"          , (void **)&pandoglBlendFunc },
+#else
 { "glBlendFunc"          , (void **)&pglBlendFunc },
+#endif
 { "glCullFace"           , (void **)&pglCullFace },
 { "glDrawBuffer"         , (void **)&pglDrawBuffer },
 { "glReadBuffer"         , (void **)&pglReadBuffer },
@@ -552,7 +589,11 @@ static dllfunc_t opengl_110funcs[] =
 { "glIsTexture"          , (void **)&pglIsTexture },
 { "glTexEnvf"            , (void **)&pglTexEnvf },
 { "glTexEnvfv"           , (void **)&pglTexEnvfv },
+#if defined(PANDORA) || defined(RPI)
+{ "glTexEnvi"            , (void **)&pandoglTexEnvi },
+#else
 { "glTexEnvi"            , (void **)&pglTexEnvi },
+#endif
 { "glTexParameterf"      , (void **)&pglTexParameterf },
 { "glTexParameterfv"     , (void **)&pglTexParameterfv },
 { "glTexParameteri"      , (void **)&pglTexParameteri },
@@ -616,7 +657,11 @@ static dllfunc_t multitexturefuncs[] =
 { "glMultiTexCoord2fARB"     , (void **)&pglMultiTexCoord2f },
 { "glMultiTexCoord3fARB"     , (void **)&pglMultiTexCoord3f },
 { "glMultiTexCoord4fARB"     , (void **)&pglMultiTexCoord4f },
+#if defined(PANDORA) || defined(RPI)
+{ "glActiveTextureARB"       , (void **)&pandoglActiveTextureARB },
+#else
 { "glActiveTextureARB"       , (void **)&pglActiveTextureARB },
+#endif
 { "glClientActiveTextureARB" , (void **)&pglClientActiveTexture },
 { "glClientActiveTextureARB" , (void **)&pglClientActiveTextureARB },
 { NULL, NULL }

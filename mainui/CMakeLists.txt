@@ -33,6 +33,9 @@ set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O3")
 if(PANDORA)
 	add_definitions(-DPANDORA)
 endif()
+if(RPI)
+        add_definitions(-DRPI)
+endif()
 
 set (MAINUI_LIBRARY xashmenu)
 

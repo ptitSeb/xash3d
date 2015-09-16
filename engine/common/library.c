@@ -45,7 +45,7 @@ void *Com_LoadLibrary( const char *dllname, int build_ordinals_table )
 #else
 	pHandle = dlopen( dllname, RTLD_LAZY );
 #endif
-#ifdef PANDORA
+#if defined(PANDORA) || defined(RPI)
 printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
 	if(!pHandle) {
 		char* tmp=strrchr(dllname, '/');

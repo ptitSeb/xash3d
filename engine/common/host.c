@@ -796,7 +796,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 		Setup_LDT_Keeper( ); // Must call before any thread creating
 #endif
 
-#if defined(XASH_SDL) && !defined(PANDORA)
+#if defined(XASH_SDL) && !(defined(PANDORA) || defined(RPI))
 	if( SDL_Init( SDL_INIT_VIDEO |
 				SDL_INIT_TIMER |
 				SDL_INIT_AUDIO |
@@ -813,7 +813,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 	}
 	else
 	{
-		#if defined(PANDORA)
+		#if defined(PANDORA) || defined(RPI)
 		Q_strncpy( host.rootdir, ".", sizeof( host.rootdir ) );
 		#else
 		#if defined(XASH_SDL)
@@ -933,7 +933,7 @@ void Host_InitCommon( int argc, const char** argv, const char *progname, qboolea
 	FS_LoadGameInfo( NULL );
 	Q_strncpy( host.gamefolder, GI->gamefolder, sizeof( host.gamefolder ));
 
-#ifndef PANDORA
+#if !(defined(PANDORA) || defined(RPI))
 	if( GI->secure )
 	{
 		// clear all developer levels when game is protected
