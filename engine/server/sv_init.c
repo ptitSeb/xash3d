@@ -621,7 +621,14 @@ void SV_InitGame( void )
 		// init game after host error
 		if( !svgame.hInstance )
 		{
-			if( !SV_LoadProgs( SI.gamedll ))
+			#if defined(PANDORA) || defined(RPI)
+printf("CL_Init, game = %s\n", GI->title);
+			if(!Q_strncmp(GI->title, "Blue Shift", 10)) {
+				Q_strncpy( GI->game_dll,"./" BSSERVERDLL, sizeof( GI->game_dll ));
+			}
+			#endif
+
+			if( !SV_LoadProgs( GI->game_dll ))
 			{
 				MsgDev( D_ERROR, "SV_InitGame: can't initialize \"%s\"\n", SI.gamedll );
 				return; // can't load

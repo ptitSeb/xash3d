@@ -53,6 +53,8 @@ GNU General Public License for more details.
 		#define CLIENTDLL "client." OS_LIB_EXT
 		#if defined(PANDORA) || defined(RPI)
 			#define SERVERDLL "hl." OS_LIB_EXT
+			#define BSSERVERDLL "hl_bs." OS_LIB_EXT
+			#define BSCLIENTDLL "bsclient." OS_LIB_EXT
 			#define LIBPATH "."
 			#define GAMEPATH "."
 		#endif

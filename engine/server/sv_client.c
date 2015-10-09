@@ -1963,7 +1963,11 @@ void SV_UserinfoChanged( sv_client_t *cl, const char *userinfo )
 	val = Info_ValueForKey( cl->userinfo, "msg" );
 	if( Q_strlen( val )) cl->messagelevel = Q_atoi( val );
 
+#if defined(PANDORA) || defined(RPI)
+	cl->local_weapons = false;
+#else
 	cl->local_weapons = Q_atoi( Info_ValueForKey( cl->userinfo, "cl_lw" )) ? true : false;
+#endif
 	cl->lag_compensation = Q_atoi( Info_ValueForKey( cl->userinfo, "cl_lc" )) ? true : false;
 	val = Info_ValueForKey( cl->userinfo, "cl_maxpacket" );
 	if( *val )
