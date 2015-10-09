@@ -150,11 +150,13 @@ qboolean CL_ChangeGame( const char *gamefolder, qboolean bReset )
 		Q_strncpy( maptitle, clgame.maptitle, MAX_STRING );
 
 #if defined(PANDORA) || defined(RPI)
-                if( !CL_LoadProgs( va( "%s/" CLIENTDLL, "." )))
+printf("game = %s\n", SI.GameInfo->title);
+        if( !CL_LoadProgs( va( "%s/" CLIENTDLL, "." )))
+			Host_Error( "can't initialize client library\n" );
 #else
 		if( !CL_LoadProgs( va( "%s/%s", GI->dll_path, GI->client_lib)))
-#endif
 			Host_Error( "can't initialize client library\n" );
+#endif
 
 		// restore parms
 		clgame.maxEntities = maxEntities;
@@ -1824,6 +1826,13 @@ void CL_Init( void )
 	// unreliable buffer. unsed for unreliable commands and voice stream
 	BF_Init( &cls.datagram, "cls.datagram", cls.datagram_buf, sizeof( cls.datagram_buf ));
 
+#if defined(PANDORA) || defined(RPI)
+printf("CL_Init, game = %s\n", SI.GameInfo->title);
+	if(!Q_strncmp(SI.GameInfo->title, "Blue Shift", 10)) {
+		loaded = CL_LoadProgs( va( "%s/%s" , GI->dll_path, BSCLIENTDLL ));
+	}
+	else
+#endif
 	loaded = CL_LoadProgs( va( "%s/%s" , GI->dll_path, GI->client_lib ));
 	if( !loaded )
 #if defined (__ANDROID__)
