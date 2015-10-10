@@ -1557,15 +1557,20 @@ qboolean Con_DrawProgress( void )
 {
 		int x = QCHAR_WIDTH;
 		int y = con.vislines - ( con.curFont->charHeight * 3 );
+		int dx = 1;
 		if( scr_download->value > 0 )
 		{
-			while( x < scr_download->value * (scr_width->value - QCHAR_WIDTH * 2)  / 100 )
-				x += Con_DrawCharacter( x, y, '=', g_color_table[7] );
+			while(( x < scr_download->value * (scr_width->value - QCHAR_WIDTH * 2)  / 100 ) && (dx>0)) {
+				dx = Con_DrawCharacter( x, y, '=', g_color_table[7] );
+				x += dx;
+			}
 		}
 		else if( scr_loading->value > 0 )
 		{
-			while( x < scr_loading->value * (scr_width->value - QCHAR_WIDTH * 2) / 100 )
-				x += Con_DrawCharacter( x, y, '=', g_color_table[7] );
+			while(( x < scr_loading->value * (scr_width->value - QCHAR_WIDTH * 2) / 100 ) && (dx>0)) {
+				dx = Con_DrawCharacter( x, y, '=', g_color_table[7] );
+				x += dx;
+			}
 		}
 		else return false;
 	return true;
