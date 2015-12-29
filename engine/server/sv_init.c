@@ -626,6 +626,10 @@ printf("CL_Init, game = %s\n", GI->title);
 			if(!Q_strncmp(GI->title, "Blue Shift", 10)) {
 				Q_strncpy( GI->game_dll,"./" BSSERVERDLL, sizeof( GI->game_dll ));
 			}
+			else if(!Q_strncmp(GI->title, "Counter-Strike", 14)) {
+				Q_strncpy( GI->game_dll,"./" CSSERVERDLL, sizeof( GI->game_dll ));
+			} else
+				Q_strncpy( GI->game_dll,"./" SERVERDLL, sizeof( GI->game_dll ));
 			#endif
 
 			if( !SV_LoadProgs( GI->game_dll ))
