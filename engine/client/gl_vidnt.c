@@ -1959,6 +1959,9 @@ static void GL_SetDefaults( void )
 
 	pglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
 	pglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+	pglPixelStorei(GL_PACK_ALIGNMENT, 1);
+	pglPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 }
 
 /*
