@@ -1832,6 +1832,10 @@ printf("CL_Init, game = %s\n", SI.GameInfo->title);
 		loaded = CL_LoadProgs( va( "%s/%s" , GI->dll_path, BSCLIENTDLL ));
 	}
 	else
+	if(!Q_strncmp(SI.GameInfo->title, "Counter-Strike", 14)) {
+		loaded = CL_LoadProgs( va( "%s/%s" , GI->dll_path, CSCLIENTDLL ));
+	}
+	else
 #endif
 	loaded = CL_LoadProgs( va( "%s/%s" , GI->dll_path, GI->client_lib ));
 	if( !loaded )

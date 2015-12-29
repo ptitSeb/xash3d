@@ -53,6 +53,8 @@ GNU General Public License for more details.
 			#define SERVERDLL "hl." OS_LIB_EXT
 			#define BSSERVERDLL "hl_bs." OS_LIB_EXT
 			#define BSCLIENTDLL "bsclient." OS_LIB_EXT
+			#define CSSERVERDLL "hl_cs." OS_LIB_EXT
+			#define CSCLIENTDLL "csclient." OS_LIB_EXT
 			#define LIBPATH "."
 			#define GAMEPATH "."
 		#endif
