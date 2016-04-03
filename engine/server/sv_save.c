@@ -13,6 +13,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 */
 
+#pragma GCC optimize 0
+
 #include "common.h"
 #include "server.h"
 #include "library.h"
