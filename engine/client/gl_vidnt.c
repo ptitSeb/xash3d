@@ -72,7 +72,6 @@ void pglActiveTextureARB( GLenum texnum ) {
 	}
 }
 #endif
-
 static dllfunc_t opengl_110funcs[] =
 {
 { "glClearColor"         , (void **)&pglClearColor },
@@ -879,7 +878,7 @@ void VID_StartupGamma( void )
 	// init gamma ramp
 	Q_memset( glState.stateRamp, 0, gammaTypeSize);
 
-#if !defined (__ANDROID__) && defined(XASH_SDL)
+#if !defined (__ANDROID__) && defined(XASH_SDL) && !defined(PANDORA)
 	glConfig.deviceSupportsGamma = !SDL_GetWindowGammaRamp( host.hWnd, NULL, NULL, NULL);
 #endif
 #if defined(PANDORA)
