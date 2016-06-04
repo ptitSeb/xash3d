@@ -717,6 +717,7 @@ void SV_DirectoryCopy( const char *pPath, file_t *pFile )
 	{
 		fileSize = FS_FileSize( t->filenames[i], true );
 		pCopy = FS_Open( t->filenames[i], "rb", true );
+		if(pCopy==NULL) printf("error open \"%s\" for reading\n", t->filenames[i]);
 
 		// filename can only be as long as a map name + extension
 		Q_strncpy( szName, FS_FileWithoutPath( t->filenames[i] ), SAVENAME_LENGTH );		

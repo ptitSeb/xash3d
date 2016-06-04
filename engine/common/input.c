@@ -34,6 +34,9 @@ qboolean	in_mouseinitialized;
 qboolean	in_mouse_suspended;
 int	in_mouse_oldbuttonstate;
 int	in_mouse_buttons;
+#ifdef PANDORA
+int noshouldermb = 0;
+#endif
 
 extern convar_t *vid_fullscreen;
 
@@ -625,6 +628,9 @@ IN_Init
 */
 void IN_Init( void )
 {
+#ifdef PANDORA
+	if( Sys_CheckParm( "-noshouldermb" )) noshouldermb = 1;
+#endif
 	IN_StartupMouse( );
 
 	cl_forwardspeed	= Cvar_Get( "cl_forwardspeed", "400", CVAR_ARCHIVE | CVAR_CLIENTDLL, "Default forward move speed" );

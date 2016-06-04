@@ -1164,10 +1164,6 @@ void FS_CreateDefaultGameInfo( const char *filename )
 	Q_strncpy( defGI.basedir, "valve", sizeof( defGI.basedir ));
 	Q_strncpy( defGI.sp_entity, "info_player_start", sizeof( defGI.sp_entity ));
 	Q_strncpy( defGI.mp_entity, "info_player_deathmatch", sizeof( defGI.mp_entity ));
-#if defined(PANDORA) || defined(RPI)
-    Q_strncpy( defGI.dll_path, LIBPATH, sizeof( defGI.dll_path ));
-    Q_strncpy( defGI.game_dll, LIBPATH "/" SERVERDLL, sizeof( defGI.game_dll ));
-#else
 	Q_strncpy( defGI.dll_path, "cl_dlls", sizeof( defGI.dll_path ));
 	Q_strncpy( defGI.dll_path, CLIENTDLL, sizeof( defGI.client_lib ));
 	Q_strncpy( defGI.game_dll, "dlls/hl.dll" , sizeof( defGI.game_dll ));
@@ -1214,16 +1210,6 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 	Q_strncpy( GameInfo->sp_entity, "info_player_start", sizeof( GameInfo->sp_entity ));
 	Q_strncpy( GameInfo->mp_entity, "info_player_deathmatch", sizeof( GameInfo->mp_entity ));
 	Q_strncpy( GameInfo->startmap, "newmap", sizeof( GameInfo->startmap ));
-#if defined(__ANDROID__) || defined(PANDORA) || defined(RPI)
-#if defined(PANDORA) || defined(RPI)
-	Q_strncpy( GameInfo->dll_path, LIBPATH, sizeof( GameInfo->dll_path ));
-#else
-	Q_strncpy( GameInfo->dll_path, getenv("XASH3D_GAMELIBDIR"), sizeof( GameInfo->dll_path ));
-#endif
-	Q_strncpy( GameInfo->client_lib, CLIENTDLL, sizeof( GameInfo->client_lib ));
-	Q_strncpy( GameInfo->game_dll, GameInfo->dll_path, sizeof( GameInfo->game_dll ));
-	Q_strncat( GameInfo->game_dll,"/" SERVERDLL, sizeof( GameInfo->game_dll ));
-#else
 	Q_strncpy( GameInfo->dll_path, "cl_dlls", sizeof( GameInfo->dll_path ));
 	Q_strncpy( GameInfo->client_lib, CLIENTDLL, sizeof( GameInfo->client_lib ));
 	Q_strncpy( GameInfo->game_dll, "dlls/hl.dll", sizeof( GameInfo->game_dll ));
@@ -1276,11 +1262,8 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 		}
 		else if( !Q_stricmp( token, "gamedll" ))
 		{
-			// already set up for __ANDROID__. Just ignore a path in game config
-#if !defined(__ANDROID__) && !(defined(PANDORA) || defined(RPI))
 			pfile = COM_ParseFile( pfile, GameInfo->game_dll );
 			COM_FixSlashes( GameInfo->game_dll );
-#endif
 		}
 		else if( !Q_stricmp( token, "gamedll_linux" ))
 		{
@@ -1421,12 +1404,8 @@ static qboolean FS_ParseGameInfo( const char *gamedir, gameinfo_t *GameInfo )
 	Q_strncpy( GameInfo->title, "New Game", sizeof( GameInfo->title ));
 	Q_strncpy( GameInfo->sp_entity, "info_player_start", sizeof( GameInfo->sp_entity ));
 	Q_strncpy( GameInfo->mp_entity, "info_player_deathmatch", sizeof( GameInfo->mp_entity ));
-#if defined(__ANDROID__) || defined(PANDORA) || defined(RPI)
-#if defined(PANDORA) || defined(RPI)
-	Q_strncpy( GameInfo->dll_path, LIBPATH, sizeof( GameInfo->dll_path ));
-#else
+#if defined(__ANDROID__)
 	Q_strncpy( GameInfo->dll_path, getenv("XASH3D_GAMELIBDIR"), sizeof( GameInfo->dll_path ));
-#endif
 	Q_strncpy( GameInfo->client_lib, CLIENTDLL, sizeof( GameInfo->client_lib ));
 	Q_strncpy( GameInfo->game_dll, GameInfo->dll_path, sizeof( GameInfo->game_dll ));
 	Q_strncat( GameInfo->game_dll,"/" SERVERDLL, sizeof( GameInfo->game_dll ));
@@ -1485,10 +1464,7 @@ static qboolean FS_ParseGameInfo( const char *gamedir, gameinfo_t *GameInfo )
 		}
 		else if( !Q_stricmp( token, "gamedll" ))
 		{
-			// already set up for __ANDROID__. Just ignore a path in game config
-#if !defined(__ANDROID__) && !(defined(PANDORA) || defined(RPI))
 			pfile = COM_ParseFile( pfile, GameInfo->game_dll );
-#endif
 		}
 		else if( !Q_stricmp( token, "gamedll_osx" ))
 		{
@@ -1500,10 +1476,7 @@ static qboolean FS_ParseGameInfo( const char *gamedir, gameinfo_t *GameInfo )
 		}
 		else if( !Q_stricmp( token, "clientlib" ))
 		{
-			// already set up for __ANDROID__. Just ignore a path in game config
-#if !defined(__ANDROID__) && !(defined(PANDORA) || defined(RPI))
 			pfile = COM_ParseFile( pfile, GameInfo->client_lib );
-#endif
 		}
 		else if( !Q_stricmp( token, "dllpath" ))
 		{
