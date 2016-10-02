@@ -30,11 +30,17 @@ const long intwinbase[] = {
  64019, 65290, 66494, 67629, 68692, 69679, 70590, 71420, 72169, 72835,
  73415, 73908, 74313, 74630, 74856, 74992, 75038 };
 
+static int rounded(double f)
+{
+        return (int)(f>0 ? floor(f+0.5) : ceil(f-0.5));
+}
+
 void make_decode_tables(struct StaticData * psd, long scaleval)
 {
   int i,j,k,kr,divv;
 
   float *table,*costab;
+  short *ptr = (short *)psd->decwins;
 
 
   for(i=0;i<5;i++)
@@ -65,6 +71,27 @@ void make_decode_tables(struct StaticData * psd, long scaleval)
       table -= 1023;
     if(i % 64 == 63)
       scaleval = - scaleval;
+  }
+
+  int val;
+  table = psd->decwin;
+
+  for(i=0; i<512; i++) {
+    if(i&1) val = rounded(table[i]*0.5);
+    else val = rounded(table[i]*-0.5);
+    if(val > 32767) val = 32767;
+    else if(val < -32768) val = -32768;
+    ptr[i] = val;
+  }
+  for(i=512; i<512+32; i++) {
+    if(i&1) val = rounded(table[i]*0.5);
+    else val = 0;
+    if(val > 32767) val = 32767;
+    else if(val < -32768) val = -32768;
+    ptr[i] = val;
+  }
+  for(i=0; i<512+32; i++) {
+    psd->decwins1[1+i] = ptr[i+1];
   }
 }
 

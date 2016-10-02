@@ -22,6 +22,7 @@
 
 cmake_minimum_required(VERSION 2.6.0)
 project (XASH_ENGINE)
+enable_language(C ASM)
 
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 if(PANDORA)
@@ -43,8 +44,12 @@ set (CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
 set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 if(PANDORA)
-        add_definitions(-DPANDORA)
+    add_definitions(-DPANDORA)
 	set(XASH_SDL ON)
+endif()
+if(ODROID)
+    add_definitions(-DODROID)
+    set(XASH_SDL ON)
 endif()
 if(RPI)
         add_definitions(-DRPI)
@@ -67,7 +72,12 @@ include_directories (. common/
     ${HL_SDK_DIR}/public
     )
 
-add_library (${XASH_ENGINE_LIBRARY} SHARED ${XASH_ENGINE_HEADERS} ${XASH_ENGINE_SOURCES})
+if(PANDORA OR ODROID)
+ file (GLOB_RECURSE XASH_LIBMPG_ASM *.S)
+endif()
+
+
+add_library (${XASH_ENGINE_LIBRARY} SHARED ${XASH_ENGINE_HEADERS} ${XASH_ENGINE_SOURCES} ${XASH_LIBMPG_ASM})
 
 if(XASH_X11)
     add_definitions(-DXASH_X11)

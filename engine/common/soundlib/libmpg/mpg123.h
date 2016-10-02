@@ -102,6 +102,8 @@ struct StaticData
 
 	// tabinit
 	float	decwin[512+32];
+	short	decwins[512+32];
+	short	decwins1[1+512+32];
 	float	cos64[16];
 	float	cos32[8];
 	float	cos16[4];
