@@ -102,6 +102,7 @@ static dllfunc_t opengl_110funcs[] =
 { "glDepthMask"          , (void **)&pglDepthMask },
 { "glDepthRange"         , (void **)&pglDepthRange },
 { "glFrontFace"          , (void **)&pglFrontFace },
+{ "glDrawArrays"      	 , (void **)&pglDrawArrays },
 { "glDrawElements"       , (void **)&pglDrawElements },
 { "glColorMask"          , (void **)&pglColorMask },
 { "glIndexPointer"       , (void **)&pglIndexPointer },
@@ -246,7 +247,6 @@ static dllfunc_t compiledvertexarrayfuncs[] =
 {
 { "glLockArraysEXT"   , (void **)&pglLockArraysEXT },
 { "glUnlockArraysEXT" , (void **)&pglUnlockArraysEXT },
-{ "glDrawArrays"      , (void **)&pglDrawArrays },
 { NULL, NULL }
 };
 

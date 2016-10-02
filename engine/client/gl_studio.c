@@ -1994,6 +1994,20 @@ static void R_StudioDrawPoints( void )
 		// sort opaque and translucent for right results
 		qsort( g_sortedMeshes, m_pSubModel->nummesh, sizeof( sortedmesh_t ), R_StudioMeshCompare );
 	}
+#define NOIMM 1
+#ifdef NOIMM
+	static noimm_cap = 0;
+	static float* noimm_col = NULL;
+	static float* noimm_tex = NULL;
+	static float* noimm_vtx = NULL;
+	int noimm_i = 0;
+	unsigned int noimm_idx = 0;
+	int noimm_set = 1;
+	pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglEnableClientState(GL_VERTEX_ARRAY);
+	if( !( g_nForceFaceFlags & STUDIO_NF_CHROME ))
+		pglEnableClientState(GL_COLOR_ARRAY);
+#endif
 
 	for( j = 0; j < m_pSubModel->nummesh; j++ ) 
 	{
@@ -2062,19 +2076,47 @@ static void R_StudioDrawPoints( void )
 		{
 			int	vertexState = 0;
 			qboolean	tri_strip;
+#ifdef NOIMM
+			noimm_i = i;
+#endif
 
 			if( i < 0 )
 			{
+#ifdef NOIMM
+				noimm_idx = 0;
+#else
 				pglBegin( GL_TRIANGLE_FAN );
+#endif
 				tri_strip = false;
 				i = -i;
 			}
 			else
 			{
+#ifdef NOIMM
+				noimm_idx = 0;
+#else
 				pglBegin( GL_TRIANGLE_STRIP );
+#endif
 				tri_strip = true;
 			}
-
+#ifdef NOIMM
+			if(noimm_cap<i) {
+				noimm_cap = i;
+				if(noimm_tex) free(noimm_tex);
+				noimm_tex = (float*)malloc(2*sizeof(float)*noimm_cap);
+				if(noimm_vtx) free(noimm_vtx);
+				noimm_vtx = (float*)malloc(3*sizeof(float)*noimm_cap);
+				if(noimm_col) free(noimm_col);
+				noimm_col = (float*)malloc(4*sizeof(float)*noimm_cap);
+				noimm_set = 1;
+			}
+			if(noimm_set) {
+				pglTexCoordPointer(2, GL_FLOAT, 0, noimm_tex);
+				pglColorPointer(4, GL_FLOAT, 0, noimm_col);
+				pglVertexPointer(3, GL_FLOAT, 0, noimm_vtx);
+				noimm_set = 0;
+			}
+#endif
 			r_stats.c_studio_polys += (i - 2);
 
 			for( ; i > 0; i--, ptricmds += 4 )
@@ -2111,31 +2153,73 @@ static void R_StudioDrawPoints( void )
 				}
 
 				if( g_nFaceFlags & STUDIO_NF_CHROME || ( g_nForceFaceFlags & STUDIO_NF_CHROME ))
+#ifdef NOIMM
+				{
+					noimm_tex[noimm_idx*2+0] = g_chrome[ptricmds[1]][0] * s;
+					noimm_tex[noimm_idx*2+1] = g_chrome[ptricmds[1]][1] * t;
+				}
+#else
 					pglTexCoord2f( g_chrome[ptricmds[1]][0] * s, g_chrome[ptricmds[1]][1] * t );
+#endif
 				else if( g_nFaceFlags & STUDIO_NF_UV_COORDS )
+#ifdef NOIMM
+				{
+					noimm_tex[noimm_idx*2+0] = ptricmds[2] * (1.0f / 32768.0f);
+					noimm_tex[noimm_idx*2+1] = ptricmds[3] * (1.0f / 32768.0f);
+				}
+#else
 					pglTexCoord2f( ptricmds[2] * (1.0f / 32768.0f), ptricmds[3] * (1.0f / 32768.0f));
-				else pglTexCoord2f( ptricmds[2] * s, ptricmds[3] * t );
+#endif
+				else 
+#ifdef NOIMM
+				{
+					noimm_tex[noimm_idx*2+0] = ptricmds[2] * s;
+					noimm_tex[noimm_idx*2+1] = ptricmds[3] * t;
+				}
+#else
+					pglTexCoord2f( ptricmds[2] * s, ptricmds[3] * t );
+#endif
 
 				if(!( g_nForceFaceFlags & STUDIO_NF_CHROME ))
                                         {
 					if( g_iRenderMode == kRenderTransAdd )
 					{
+#ifdef NOIMM
+						noimm_col[noimm_idx*4+0] = 1.0f; noimm_col[noimm_idx*4+1] = 1.0f;
+						noimm_col[noimm_idx*4+2] = 1.0f; noimm_col[noimm_idx*4+3] = alpha;
+#else
 						pglColor4f( 1.0f, 1.0f, 1.0f, alpha );
+#endif
 					}
 					else if( g_iRenderMode == kRenderTransColor )
 					{
 						color24	*clr;
 						clr = &RI.currententity->curstate.rendercolor;
+#ifdef NOIMM
+						noimm_col[noimm_idx*4+0] = clr->r*(1.0f/255.0f); noimm_col[noimm_idx*4+1] = clr->g*(1.0f/255.0f);
+						noimm_col[noimm_idx*4+2] = clr->b*(1.0f/255.0f); noimm_col[noimm_idx*4+3] = alpha;
+#else
 						pglColor4ub( clr->r, clr->g, clr->b, alpha * 255 );
+#endif
 					}
 					else if( g_nFaceFlags & STUDIO_NF_FULLBRIGHT )
 					{
+#ifdef NOIMM
+						noimm_col[noimm_idx*4+0] = 1.0f; noimm_col[noimm_idx*4+1] = 1.0f;
+						noimm_col[noimm_idx*4+2] = 1.0f; noimm_col[noimm_idx*4+3] = alpha;
+#else
 						pglColor4f( 1.0f, 1.0f, 1.0f, alpha );
+#endif
 					}
 					else
 					{
 						lv = (float *)g_lightvalues[ptricmds[1]];
+#ifdef NOIMM
+						memcpy(noimm_col+noimm_idx*4, lv, sizeof(float)*3);
+						noimm_col[noimm_idx*4+3] = alpha;
+#else
 						pglColor4f( lv[0], lv[1], lv[2], alpha );
+#endif
 					}
 				}
 
@@ -2146,19 +2230,37 @@ static void R_StudioDrawPoints( void )
 					vec3_t	scaled_vertex;
 					nv = (float *)g_xformnorms[ptricmds[1]];
 					VectorMA( av, scale, nv, scaled_vertex );
+#ifdef NOIMM
+					memcpy(noimm_vtx+3*noimm_idx++, scaled_vertex, 3*sizeof(float));
+#else
 					pglVertex3fv( scaled_vertex );
+#endif
 				}
 				else
 				{
+#ifdef NOIMM
+					memcpy(noimm_vtx+3*noimm_idx++, av, 3*sizeof(float));
+#else
 					pglVertex3f( av[0], av[1], av[2] );
+#endif
 					ASSERT( g_nNumArrayVerts < MAXARRAYVERTS ); 
 					VectorCopy( av, g_xarrayverts[g_nNumArrayVerts] ); // store off vertex
 					g_nNumArrayVerts++;
 				}
 			}
+#ifdef NOIMM
+			pglDrawArrays(tri_strip?GL_TRIANGLE_STRIP:GL_TRIANGLE_FAN, 0, noimm_idx);
+#else
 			pglEnd();
+#endif
 		}
 	}
+#ifdef NOIMM
+	pglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglDisableClientState(GL_VERTEX_ARRAY);
+	if( !( g_nForceFaceFlags & STUDIO_NF_CHROME ))
+		pglDisableClientState(GL_COLOR_ARRAY);
+#endif
 
 	// restore depthmask for next call StudioDrawPoints
 	if( g_iRenderMode != kRenderTransAdd )
