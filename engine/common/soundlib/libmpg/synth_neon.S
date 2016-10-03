@@ -44,15 +44,15 @@ synth_1to1_neon_asm:
 	mov			r4, #64
 1:
 	vld1.16		{d0-d3}, [WINDOW], r4
-	vld1.16		{d4-d7}, [B0, :128]!
+	vld1.16		{d4-d7}, [B0]!
 	vld1.16		{d8-d11}, [WINDOW], r4
 	vswp		d1, d4
-	vld1.16		{d12-d15}, [B0, :128]!
+	vld1.16		{d12-d15}, [B0]!
 	vld1.16		{d16-d19}, [WINDOW], r4
-	vld1.16		{d20-d23}, [B0, :128]!
+	vld1.16		{d20-d23}, [B0]!
 	vswp		d9, d12
 	vld1.16		{d24-d27}, [WINDOW], r4
-	vld1.16		{d28-d31}, [B0, :128]!
+	vld1.16		{d28-d31}, [B0]!
 	vswp		d17, d20
 	vswp		d25, d28
 	vmull.s16	q0, d0, d1
@@ -89,15 +89,15 @@ synth_1to1_neon_asm:
 	mov			r5, #-32
 1:
 	vld1.16		{d0-d3}, [WINDOW], r4
-	vld1.16		{d4-d7}, [B0, :128], r5
+	vld1.16		{d4-d7}, [B0], r5
 	vld1.16		{d8-d11}, [WINDOW], r4
 	vswp		d1, d4
-	vld1.16		{d12-d15}, [B0, :128], r5
+	vld1.16		{d12-d15}, [B0], r5
 	vld1.16		{d16-d19}, [WINDOW], r4
-	vld1.16		{d20-d23}, [B0, :128], r5
+	vld1.16		{d20-d23}, [B0], r5
 	vswp		d9, d12
 	vld1.16		{d24-d27}, [WINDOW], r4
-	vld1.16		{d28-d31}, [B0, :128], r5
+	vld1.16		{d28-d31}, [B0], r5
 	vswp		d17, d20
 	vswp		d25, d28
 	vmull.s16	q0, d0, d1
