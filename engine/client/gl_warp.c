@@ -600,10 +600,31 @@ void EmitWaterPolys( glpoly_t *polys, qboolean noCull )
 	// reset fog color for nonlightmapped water
 	GL_ResetFogColor();
 
+#ifdef NOIMM
+	int noimm_i = 0;
+	unsigned int noimm_vidx = 0;
+	unsigned int noimm_v0 = 0;
+	unsigned int noimm_iidx = 0;
+	unsigned int noimm_total = 0;
+	int noimm_zero = 0;
+	for(glpoly_t *p2 = polys; p2; p2 = p2->next )
+	{
+		noimm_total+=p2->numverts;
+		noimm_i+=(p2->numverts-2)*3;
+	}
+	noimm_SetCap(noimm_total);
+	noimm_SetCapIdx(noimm_i);
+	pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglEnableClientState(GL_VERTEX_ARRAY);
+#endif
 	for( p = polys; p; p = p->next )
 	{
+#ifdef NOIMM
+		noimm_v0 += noimm_vidx;
+		noimm_vidx = 0;
+#else
 		pglBegin( GL_POLYGON );
-
+#endif
 		for( i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE )
 		{
 			if( waveHeight )
@@ -623,14 +644,36 @@ void EmitWaterPolys( glpoly_t *polys, qboolean noCull )
 			t = ot + r_turbsin[(int)((os * 0.125f + cl.time ) * TURBSCALE) & 255];
 			t *= ( 1.0f / SUBDIVIDE_SIZE );
 
+#ifdef NOIMM
+			if(i<3)
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx;
+			else
+			{
+				// same as triangle fan
+				noimm_idx[noimm_iidx++]=noimm_v0;
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx-1;
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx;
+			}
+			// no need to check for multitexture, as the active unit (the one selected) will be used
+			noimm_tex[(noimm_v0+noimm_vidx)*2+0]= s; noimm_tex[(noimm_v0+noimm_vidx)*2+1]=t;
+			memcpy(noimm_vtx+(noimm_v0+noimm_vidx)*3, v, 2*sizeof(float));
+			noimm_vtx[(noimm_v0+noimm_vidx++)*3+2] = nv;
+#else
 			if( glState.activeTMU != 0 )
 				GL_MultiTexCoord2f( glState.activeTMU, s, t );
 			else pglTexCoord2f( s, t );
 			pglVertex3f( v[0], v[1], nv );
+#endif
 		}
+#ifndef NOIMM
 		pglEnd();
+#endif
 	}
-
+#ifdef NOIMM
+	pglDrawElements(GL_TRIANGLES, noimm_iidx, GL_UNSIGNED_SHORT, noimm_idx);
+	pglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglDisableClientState(GL_VERTEX_ARRAY);
+#endif
 	// restore culling
 	if( noCull ) pglEnable( GL_CULL_FACE );
 
@@ -651,10 +694,31 @@ void EmitSkyPolys( msurface_t *fa )
 	vec3_t	dir;
 	float	length;
 
+#ifdef NOIMM
+	int noimm_i = 0;
+	unsigned int noimm_vidx = 0;
+	unsigned int noimm_v0 = 0;
+	unsigned int noimm_iidx = 0;
+	unsigned int noimm_total = 0;
+	int noimm_zero = 0;
+	for(glpoly_t* p2 = fa->polys; p2; p2 = p2->next )
+	{
+		noimm_total+=p2->numverts;
+		noimm_i+=(p2->numverts-2)*3;
+	}
+	noimm_SetCap(noimm_total);
+	noimm_SetCapIdx(noimm_i);
+	pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglEnableClientState(GL_VERTEX_ARRAY);
+#endif
 	for( p = fa->polys; p; p = p->next )
 	{
+#ifdef NOIMM
+		noimm_v0 += noimm_vidx;
+		noimm_vidx = 0;
+#else
 		pglBegin( GL_POLYGON );
-
+#endif
 		for( i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE )
 		{
 			VectorSubtract( v, RI.vieworg, dir );
@@ -669,11 +733,34 @@ void EmitSkyPolys( msurface_t *fa )
 			s = ( speedscale + dir[0] ) * (1.0f / 128.0f);
 			t = ( speedscale + dir[1] ) * (1.0f / 128.0f);
 
+#ifdef NOIMM
+			if(i<3)
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx;
+			else
+			{
+				// same as triangle fan
+				noimm_idx[noimm_iidx++]=noimm_v0;
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx-1;
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx;
+			}
+			// no need to check for multitexture, as the active unit (the one selected) will be used
+			noimm_tex[(noimm_v0+noimm_vidx)*2+0]= s; noimm_tex[(noimm_v0+noimm_vidx)*2+1]=t;
+			memcpy(noimm_vtx+(noimm_v0+noimm_vidx)*3, v, 3*sizeof(float));
+#else
 			pglTexCoord2f( s, t );
 			pglVertex3fv( v );
+#endif
 		}
+#ifndef NOIMM
 		pglEnd ();
+#endif
 	}
+#ifdef NOIMM
+	pglDrawElements(GL_TRIANGLES, noimm_iidx, GL_UNSIGNED_SHORT, noimm_idx);
+	pglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglDisableClientState(GL_VERTEX_ARRAY);
+#endif
+
 }
 
 /*

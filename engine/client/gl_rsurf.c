@@ -761,7 +761,34 @@ void DrawGLPoly( glpoly_t *p, float xScale, float yScale )
 
 	if( xScale != 0.0f && yScale != 0.0f )
 		hasScale = true;
+#ifdef NOIMM
+	pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglEnableClientState(GL_VERTEX_ARRAY);
+	unsigned int noimm_iidx = 0;
+	unsigned int noimm_vidx = 0;
 
+	noimm_SetCap(p->numverts);
+	noimm_SetCapIdx((p->numverts-2)*3);
+
+	for( i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE )
+	{
+		if(i<3)
+			noimm_idx[noimm_iidx++]=noimm_vidx;
+		else
+		{
+			// same as triangle fan
+			noimm_idx[noimm_iidx++]=0;
+			noimm_idx[noimm_iidx++]=noimm_vidx-1;
+			noimm_idx[noimm_iidx++]=noimm_vidx;
+		}
+		if( hasScale ) { noimm_tex[(noimm_vidx)*2+0]=( v[3] + sOffset ) * xScale; noimm_tex[(noimm_vidx)*2+1]=( v[4] + tOffset ) * yScale ; }
+		else {noimm_tex[(noimm_vidx)*2+0]=v[3] + sOffset;noimm_tex[(noimm_vidx)*2+1]=v[4] + tOffset;}
+		memcpy(noimm_vtx+(noimm_vidx++)*3, v, 3*sizeof(float));
+	}
+	pglDrawElements(GL_TRIANGLES, noimm_iidx, GL_UNSIGNED_SHORT, noimm_idx);
+	pglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglDisableClientState(GL_VERTEX_ARRAY);
+#else
 	pglBegin( GL_POLYGON );
 
 	for( i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE )
@@ -774,7 +801,7 @@ void DrawGLPoly( glpoly_t *p, float xScale, float yScale )
 	}
 
 	pglEnd();
-
+#endif
 	// special hack for non-lightmapped surfaces
 	if( p->flags & SURF_DRAWTILED )
 		GL_SetupFogColorForSurfaces();
@@ -794,6 +821,50 @@ void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
 	if( soffset == 0.0f && toffset == 0.0f )
 		dynamic = false;
 
+#ifdef NOIMM
+	int noimm_i = 0;
+	unsigned int noimm_vidx = 0;
+	unsigned int noimm_v0 = 0;
+	unsigned int noimm_iidx = 0;
+	unsigned int noimm_total = 0;
+	int noimm_zero = 0;
+	pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglEnableClientState(GL_VERTEX_ARRAY);
+	glpoly_t *p2 = p;
+	for( ; p2 != NULL; p2 = p2->chain )
+	{
+		noimm_total+=p->numverts;
+		noimm_i+=(p->numverts-2)*3;
+	}
+	noimm_SetCap(noimm_total);
+	noimm_SetCapIdx(noimm_i);
+
+	for( ; p != NULL; p = p->chain )
+	{
+		float	*v;
+		int	i;
+
+		v = p->verts[0];
+		for( i = 0; i < p->numverts; i++, v += VERTEXSIZE )
+		{
+			if(i<3)
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx;
+			else
+			{
+				// same as triangle fan
+				noimm_idx[noimm_iidx++]=noimm_v0;
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx-1;
+				noimm_idx[noimm_iidx++]=noimm_v0+noimm_vidx;
+			}
+			if( !dynamic ) { noimm_tex[(noimm_v0+noimm_vidx)*2+0]=v[5]; noimm_tex[(noimm_v0+noimm_vidx)*2+1]=v[6]; }
+			else {noimm_tex[(noimm_v0+noimm_vidx)*2+0]=v[5] - soffset;noimm_tex[(noimm_v0+noimm_vidx)*2+1]=v[6] - toffset;}
+			memcpy(noimm_vtx+(noimm_v0+noimm_vidx++)*3, v, 3*sizeof(float));
+		}
+	}
+	pglDrawElements(GL_TRIANGLES, noimm_iidx, GL_UNSIGNED_SHORT, noimm_idx);
+	pglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pglDisableClientState(GL_VERTEX_ARRAY);
+#else
 	for( ; p != NULL; p = p->chain )
 	{
 		float	*v;
@@ -810,6 +881,7 @@ void DrawGLPolyChain( glpoly_t *p, float soffset, float toffset )
 		}
 		pglEnd ();
 	}
+#endif
 }
 
 /*

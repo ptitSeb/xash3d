@@ -492,6 +492,26 @@ void R_NewMap( void );
 /*
 =======================================================================
 
+ GL NO_IMM
+ Some helper to avoid some immediate mode (glBegin / glEnd)
+
+=======================================================================
+*/
+#define NOIMM 1
+#ifdef NOIMM
+extern int noimm_cap;
+extern int noimm_capi;
+extern float* noimm_col;
+extern float* noimm_tex;
+extern float* noimm_vtx;
+extern short* noimm_idx;
+void noimm_SetCap(int total);
+void noimm_SetCapIdx(int total);
+#endif
+
+/*
+=======================================================================
+
  GL STATE MACHINE
 
 =======================================================================

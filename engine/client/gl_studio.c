@@ -1994,15 +1994,13 @@ static void R_StudioDrawPoints( void )
 		// sort opaque and translucent for right results
 		qsort( g_sortedMeshes, m_pSubModel->nummesh, sizeof( sortedmesh_t ), R_StudioMeshCompare );
 	}
-#define NOIMM 1
 #ifdef NOIMM
-	static noimm_cap = 0;
-	static float* noimm_col = NULL;
-	static float* noimm_tex = NULL;
-	static float* noimm_vtx = NULL;
 	int noimm_i = 0;
-	unsigned int noimm_idx = 0;
-	int noimm_set = 1;
+	unsigned int noimm_vidx = 0;
+	unsigned int noimm_v0 = 0;
+	unsigned int noimm_iidx = 0;
+	unsigned int noimm_total = 0;
+	int noimm_zero = 0;
 	pglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	pglEnableClientState(GL_VERTEX_ARRAY);
 	if( !( g_nForceFaceFlags & STUDIO_NF_CHROME ))
@@ -2071,19 +2069,33 @@ static void R_StudioDrawPoints( void )
 		{
 			GL_Bind( GL_TEXTURE0, ptexture[pskinref[pmesh->skinref]].index );
 		}
+#ifdef NOIMM
+		// get the total number of elements
+		short *i_tmp = ptricmds;
+		noimm_total = 0;
+		noimm_i = 0;
+		while( ( i = *( i_tmp++ ) ) ) {
+			if(i<0)i=-i;
+			i_tmp+=i*4;
+			noimm_total+=i;
+			noimm_i+=(i-2)*3;
+		}
+		noimm_SetCap(noimm_total);
+		noimm_SetCapIdx(noimm_i);
 
+		noimm_v0 = 0;
+		noimm_iidx = 0;
+		noimm_vidx = 0;
+#endif
 		while( ( i = *( ptricmds++ ) ) )
 		{
 			int	vertexState = 0;
 			qboolean	tri_strip;
-#ifdef NOIMM
-			noimm_i = i;
-#endif
-
 			if( i < 0 )
 			{
 #ifdef NOIMM
-				noimm_idx = 0;
+				noimm_v0 += noimm_vidx;
+				noimm_vidx = 0;
 #else
 				pglBegin( GL_TRIANGLE_FAN );
 #endif
@@ -2093,30 +2105,13 @@ static void R_StudioDrawPoints( void )
 			else
 			{
 #ifdef NOIMM
-				noimm_idx = 0;
+				noimm_v0 += noimm_vidx;
+				noimm_vidx = 0;
 #else
 				pglBegin( GL_TRIANGLE_STRIP );
 #endif
 				tri_strip = true;
 			}
-#ifdef NOIMM
-			if(noimm_cap<i) {
-				noimm_cap = i;
-				if(noimm_tex) free(noimm_tex);
-				noimm_tex = (float*)malloc(2*sizeof(float)*noimm_cap);
-				if(noimm_vtx) free(noimm_vtx);
-				noimm_vtx = (float*)malloc(3*sizeof(float)*noimm_cap);
-				if(noimm_col) free(noimm_col);
-				noimm_col = (float*)malloc(4*sizeof(float)*noimm_cap);
-				noimm_set = 1;
-			}
-			if(noimm_set) {
-				pglTexCoordPointer(2, GL_FLOAT, 0, noimm_tex);
-				pglColorPointer(4, GL_FLOAT, 0, noimm_col);
-				pglVertexPointer(3, GL_FLOAT, 0, noimm_vtx);
-				noimm_set = 0;
-			}
-#endif
 			r_stats.c_studio_polys += (i - 2);
 
 			for( ; i > 0; i--, ptricmds += 4 )
@@ -2125,6 +2120,9 @@ static void R_StudioDrawPoints( void )
 				if( vertexState++ < 3 )
 				{
 					g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts;
+#ifdef NOIMM
+					noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx;
+#endif
 				}
 				else if( tri_strip )
 				{
@@ -2135,6 +2133,11 @@ static void R_StudioDrawPoints( void )
 						g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts - 2;
 						g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts - 1;
 						g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts;
+#ifdef NOIMM
+						noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx-2;
+						noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx-1;
+						noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx;
+#endif
 					}
 					else
 					{
@@ -2142,6 +2145,11 @@ static void R_StudioDrawPoints( void )
 						g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts - 1;
 						g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts - 2;
 						g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts;
+#ifdef NOIMM
+						noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx-1;
+						noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx-2;
+						noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx;
+#endif
 					}
 				}
 				else
@@ -2150,13 +2158,18 @@ static void R_StudioDrawPoints( void )
 					g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts - ( vertexState - 1 );
 					g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts - 1;
 					g_xarrayelems[g_nNumArrayElems++] = g_nNumArrayVerts;
+#ifdef NOIMM
+					noimm_idx[noimm_iidx++] = noimm_v0;
+					noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx-1;
+					noimm_idx[noimm_iidx++] = noimm_v0+noimm_vidx;
+#endif
 				}
 
 				if( g_nFaceFlags & STUDIO_NF_CHROME || ( g_nForceFaceFlags & STUDIO_NF_CHROME ))
 #ifdef NOIMM
 				{
-					noimm_tex[noimm_idx*2+0] = g_chrome[ptricmds[1]][0] * s;
-					noimm_tex[noimm_idx*2+1] = g_chrome[ptricmds[1]][1] * t;
+					noimm_tex[(noimm_v0+noimm_vidx)*2+0] = g_chrome[ptricmds[1]][0] * s;
+					noimm_tex[(noimm_v0+noimm_vidx)*2+1] = g_chrome[ptricmds[1]][1] * t;
 				}
 #else
 					pglTexCoord2f( g_chrome[ptricmds[1]][0] * s, g_chrome[ptricmds[1]][1] * t );
@@ -2164,8 +2177,8 @@ static void R_StudioDrawPoints( void )
 				else if( g_nFaceFlags & STUDIO_NF_UV_COORDS )
 #ifdef NOIMM
 				{
-					noimm_tex[noimm_idx*2+0] = ptricmds[2] * (1.0f / 32768.0f);
-					noimm_tex[noimm_idx*2+1] = ptricmds[3] * (1.0f / 32768.0f);
+					noimm_tex[(noimm_v0+noimm_vidx)*2+0] = ptricmds[2] * (1.0f / 32768.0f);
+					noimm_tex[(noimm_v0+noimm_vidx)*2+1] = ptricmds[3] * (1.0f / 32768.0f);
 				}
 #else
 					pglTexCoord2f( ptricmds[2] * (1.0f / 32768.0f), ptricmds[3] * (1.0f / 32768.0f));
@@ -2173,8 +2186,8 @@ static void R_StudioDrawPoints( void )
 				else 
 #ifdef NOIMM
 				{
-					noimm_tex[noimm_idx*2+0] = ptricmds[2] * s;
-					noimm_tex[noimm_idx*2+1] = ptricmds[3] * t;
+					noimm_tex[(noimm_v0+noimm_vidx)*2+0] = ptricmds[2] * s;
+					noimm_tex[(noimm_v0+noimm_vidx)*2+1] = ptricmds[3] * t;
 				}
 #else
 					pglTexCoord2f( ptricmds[2] * s, ptricmds[3] * t );
@@ -2185,8 +2198,8 @@ static void R_StudioDrawPoints( void )
 					if( g_iRenderMode == kRenderTransAdd )
 					{
 #ifdef NOIMM
-						noimm_col[noimm_idx*4+0] = 1.0f; noimm_col[noimm_idx*4+1] = 1.0f;
-						noimm_col[noimm_idx*4+2] = 1.0f; noimm_col[noimm_idx*4+3] = alpha;
+						noimm_col[(noimm_v0+noimm_vidx)*4+0] = 1.0f; noimm_col[(noimm_v0+noimm_vidx)*4+1] = 1.0f;
+						noimm_col[(noimm_v0+noimm_vidx)*4+2] = 1.0f; noimm_col[(noimm_v0+noimm_vidx)*4+3] = alpha;
 #else
 						pglColor4f( 1.0f, 1.0f, 1.0f, alpha );
 #endif
@@ -2196,8 +2209,8 @@ static void R_StudioDrawPoints( void )
 						color24	*clr;
 						clr = &RI.currententity->curstate.rendercolor;
 #ifdef NOIMM
-						noimm_col[noimm_idx*4+0] = clr->r*(1.0f/255.0f); noimm_col[noimm_idx*4+1] = clr->g*(1.0f/255.0f);
-						noimm_col[noimm_idx*4+2] = clr->b*(1.0f/255.0f); noimm_col[noimm_idx*4+3] = alpha;
+						noimm_col[(noimm_v0+noimm_vidx)*4+0] = clr->r*(1.0f/255.0f); noimm_col[(noimm_v0+noimm_vidx)*4+1] = clr->g*(1.0f/255.0f);
+						noimm_col[(noimm_v0+noimm_vidx)*4+2] = clr->b*(1.0f/255.0f); noimm_col[(noimm_v0+noimm_vidx)*4+3] = alpha;
 #else
 						pglColor4ub( clr->r, clr->g, clr->b, alpha * 255 );
 #endif
@@ -2205,8 +2218,8 @@ static void R_StudioDrawPoints( void )
 					else if( g_nFaceFlags & STUDIO_NF_FULLBRIGHT )
 					{
 #ifdef NOIMM
-						noimm_col[noimm_idx*4+0] = 1.0f; noimm_col[noimm_idx*4+1] = 1.0f;
-						noimm_col[noimm_idx*4+2] = 1.0f; noimm_col[noimm_idx*4+3] = alpha;
+						noimm_col[(noimm_v0+noimm_vidx)*4+0] = 1.0f; noimm_col[(noimm_v0+noimm_vidx)*4+1] = 1.0f;
+						noimm_col[(noimm_v0+noimm_vidx)*4+2] = 1.0f; noimm_col[(noimm_v0+noimm_vidx)*4+3] = alpha;
 #else
 						pglColor4f( 1.0f, 1.0f, 1.0f, alpha );
 #endif
@@ -2215,8 +2228,8 @@ static void R_StudioDrawPoints( void )
 					{
 						lv = (float *)g_lightvalues[ptricmds[1]];
 #ifdef NOIMM
-						memcpy(noimm_col+noimm_idx*4, lv, sizeof(float)*3);
-						noimm_col[noimm_idx*4+3] = alpha;
+						memcpy(noimm_col+(noimm_v0+noimm_vidx)*4, lv, sizeof(float)*3);
+						noimm_col[(noimm_v0+noimm_vidx)*4+3] = alpha;
 #else
 						pglColor4f( lv[0], lv[1], lv[2], alpha );
 #endif
@@ -2231,7 +2244,7 @@ static void R_StudioDrawPoints( void )
 					nv = (float *)g_xformnorms[ptricmds[1]];
 					VectorMA( av, scale, nv, scaled_vertex );
 #ifdef NOIMM
-					memcpy(noimm_vtx+3*noimm_idx++, scaled_vertex, 3*sizeof(float));
+					memcpy(noimm_vtx+3*(noimm_v0+noimm_vidx++), scaled_vertex, 3*sizeof(float));
 #else
 					pglVertex3fv( scaled_vertex );
 #endif
@@ -2239,7 +2252,7 @@ static void R_StudioDrawPoints( void )
 				else
 				{
 #ifdef NOIMM
-					memcpy(noimm_vtx+3*noimm_idx++, av, 3*sizeof(float));
+					memcpy(noimm_vtx+3*(noimm_v0+noimm_vidx++), av, 3*sizeof(float));
 #else
 					pglVertex3f( av[0], av[1], av[2] );
 #endif
@@ -2248,12 +2261,13 @@ static void R_StudioDrawPoints( void )
 					g_nNumArrayVerts++;
 				}
 			}
-#ifdef NOIMM
-			pglDrawArrays(tri_strip?GL_TRIANGLE_STRIP:GL_TRIANGLE_FAN, 0, noimm_idx);
-#else
+#ifndef NOIMM
 			pglEnd();
 #endif
 		}
+#ifdef NOIMM
+		pglDrawElements(GL_TRIANGLES, noimm_iidx, GL_UNSIGNED_SHORT, noimm_idx);
+#endif
 	}
 #ifdef NOIMM
 	pglDisableClientState(GL_TEXTURE_COORD_ARRAY);

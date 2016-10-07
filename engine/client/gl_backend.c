@@ -748,3 +748,36 @@ rebuild_page:
 }
 
 //=======================================================
+int noimm_cap = 0;
+int noimm_capi = 0;
+float* noimm_col = NULL;
+float* noimm_tex = NULL;
+float* noimm_vtx = NULL;
+short* noimm_idx = NULL;
+float* noimm_mtex[3] = {0};
+int noimm_mcap[3] = {0};
+
+void noimm_SetCap(int total)
+{
+	if(noimm_cap<total) {
+		noimm_cap = total;
+		if(noimm_tex) free(noimm_tex);
+		noimm_tex = (float*)malloc(2*sizeof(float)*noimm_cap);
+		if(noimm_vtx) free(noimm_vtx);
+		noimm_vtx = (float*)malloc(3*sizeof(float)*noimm_cap);
+		if(noimm_col) free(noimm_col);
+		noimm_col = (float*)malloc(4*sizeof(float)*noimm_cap);
+	}
+	pglTexCoordPointer(2, GL_FLOAT, 0, noimm_tex);
+	pglColorPointer(4, GL_FLOAT, 0, noimm_col);
+	pglVertexPointer(3, GL_FLOAT, 0, noimm_vtx);
+}
+
+void noimm_SetCapIdx(int total)
+{
+	if(noimm_capi<total) {
+		noimm_capi = total;
+		if(noimm_idx) free(noimm_idx);
+		noimm_idx = (short*)malloc(noimm_capi*sizeof(short));
+	}
+}
