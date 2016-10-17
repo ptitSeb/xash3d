@@ -601,13 +601,14 @@ void EmitWaterPolys( glpoly_t *polys, qboolean noCull )
 	GL_ResetFogColor();
 
 #ifdef NOIMM
+	glpoly_t *p2;
 	int noimm_i = 0;
 	unsigned int noimm_vidx = 0;
 	unsigned int noimm_v0 = 0;
 	unsigned int noimm_iidx = 0;
 	unsigned int noimm_total = 0;
 	int noimm_zero = 0;
-	for(glpoly_t *p2 = polys; p2; p2 = p2->next )
+	for(p2 = polys; p2; p2 = p2->next )
 	{
 		noimm_total+=p2->numverts;
 		noimm_i+=(p2->numverts-2)*3;
@@ -695,13 +696,14 @@ void EmitSkyPolys( msurface_t *fa )
 	float	length;
 
 #ifdef NOIMM
+	glpoly_t* p2;
 	int noimm_i = 0;
 	unsigned int noimm_vidx = 0;
 	unsigned int noimm_v0 = 0;
 	unsigned int noimm_iidx = 0;
 	unsigned int noimm_total = 0;
 	int noimm_zero = 0;
-	for(glpoly_t* p2 = fa->polys; p2; p2 = p2->next )
+	for(p2 = fa->polys; p2; p2 = p2->next )
 	{
 		noimm_total+=p2->numverts;
 		noimm_i+=(p2->numverts-2)*3;
