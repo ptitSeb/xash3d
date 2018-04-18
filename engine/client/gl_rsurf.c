@@ -83,6 +83,8 @@ static void SubdividePolygon_r( msurface_t *warpface, int numverts, float *verts
 	float	m, frac, s, t, *v, vertsDiv, *verts_p;
 	vec3_t	front[SUBDIVIDE_SIZE], back[SUBDIVIDE_SIZE], total;
 	float	dist[SUBDIVIDE_SIZE], total_s, total_t, total_ls, total_lt;
+	float   min_s, min_t;
+	float   min_ls, min_lt;
 	glpoly_t	*poly;
 
 	Q_memset( dist, 0, SUBDIVIDE_SIZE * sizeof( float ) );
@@ -173,6 +175,13 @@ static void SubdividePolygon_r( msurface_t *warpface, int numverts, float *verts
 			t /= warpface->texinfo->texture->height; 
 		}
 
+		if(i) {
+			if(min_s>s) min_s = s;
+			if(min_t>t) min_t = t;
+		} else {
+			min_s = s; min_t = t;
+		}
+
 		verts_p[VERTEXSIZE * ( i + 1 ) + 3] = s;
 		verts_p[VERTEXSIZE * ( i + 1 ) + 4] = t;
  
@@ -195,12 +204,30 @@ static void SubdividePolygon_r( msurface_t *warpface, int numverts, float *verts
 			t += LM_SAMPLE_SIZE >> 1;
 			t /= BLOCK_SIZE * LM_SAMPLE_SIZE; //fa->texinfo->texture->height;
 
+			if(i) {
+				if(min_ls>s) min_ls = s;
+				if(min_lt>t) min_lt = t;
+			} else {
+				min_ls = s; min_lt = t;
+			}
+
 			verts_p[VERTEXSIZE * ( i + 1 ) + 5] = s;
 			verts_p[VERTEXSIZE * ( i + 1 ) + 6] = t;
 
 			total_ls += s;
 			total_lt += t;
 		}
+	}
+
+	min_s = (int)min_s;
+	min_t = (int)min_t;
+	if(min_s!=0.0f || min_t!=0.0f) {
+		for( i = 0; i < numverts; i++ ) {
+			verts_p[VERTEXSIZE * ( i + 1 ) + 3] -= min_s;
+			verts_p[VERTEXSIZE * ( i + 1 ) + 4] -= min_t;
+		}
+		total_s -= numverts*min_s;
+		total_t -= numverts*min_t;
 	}
 
 	vertsDiv = ( 1.0f / (float)numverts );
@@ -211,6 +238,17 @@ static void SubdividePolygon_r( msurface_t *warpface, int numverts, float *verts
 
 	if( !( warpface->flags & SURF_DRAWTURB ))
 	{
+		min_ls = (int)min_ls;
+		min_lt = (int)min_lt;
+		if(min_ls!=0.0f || min_lt!=0.0f) {
+			for( i = 0; i < numverts; i++ ) {
+				verts_p[VERTEXSIZE * ( i + 1 ) + 5] -= min_ls;
+				verts_p[VERTEXSIZE * ( i + 1 ) + 6] -= min_lt;
+			}
+			total_ls -= numverts*min_ls;
+			total_lt -= numverts*min_lt;
+		}
+
 		verts_p[5] = total_ls * vertsDiv;
 		verts_p[6] = total_lt * vertsDiv;
 	}
@@ -296,6 +334,8 @@ void GL_BuildPolygonFromSurface( model_t *mod, msurface_t *fa )
 	gltexture_t	*glt;
 	float		*vec, *verts_p;
 	float		s, t;
+	float		min_s, min_t;
+	float		min_ls, min_lt;
 	glpoly_t		*poly;
 
 	// already created
@@ -353,6 +393,13 @@ void GL_BuildPolygonFromSurface( model_t *mod, msurface_t *fa )
 		verts_p[VERTEXSIZE * i + 3] = s;
 		verts_p[VERTEXSIZE * i + 4] = t;
 
+		if(i) {
+			if(min_s>s) min_s = s;
+			if(min_t>t) min_t = t;
+		} else {
+			min_s = s; min_t = t;
+		}
+
 		// lightmap texture coordinates
 		s = DotProduct( vec, fa->texinfo->vecs[0] ) + fa->texinfo->vecs[0][3];
 		s -= fa->texturemins[0];
@@ -366,9 +413,30 @@ void GL_BuildPolygonFromSurface( model_t *mod, msurface_t *fa )
 		t += LM_SAMPLE_SIZE >> 1;
 		t /= BLOCK_SIZE * LM_SAMPLE_SIZE; //fa->texinfo->texture->height;
 
+		if(i) {
+			if(min_ls>s) min_ls = s;
+			if(min_lt>t) min_lt = t;
+		} else {
+			min_ls = s; min_lt = t;
+		}
+
 		verts_p[VERTEXSIZE * i + 5] = s;
 		verts_p[VERTEXSIZE * i + 6] = t;
 	}
+	min_s = (int)min_s;
+	min_t = (int)min_t;
+	if(min_s!=0.0f || min_t!=0.0f)
+		for( i = 0; i < lnumverts; i++ ) {
+			verts_p[VERTEXSIZE * i + 3] -= min_s;
+			verts_p[VERTEXSIZE * i + 4] -= min_t;
+		}
+	min_ls = (int)min_ls;
+	min_lt = (int)min_lt;
+	if(min_ls!=0.0f || min_lt!=0.0f)
+		for( i = 0; i < lnumverts; i++ ) {
+			verts_p[VERTEXSIZE * i + 5] -= min_ls;
+			verts_p[VERTEXSIZE * i + 6] -= min_lt;
+		}
 
 	// remove co-linear points - Ed
 	if( !gl_keeptjunctions->integer && !( fa->flags & SURF_UNDERWATER ))
