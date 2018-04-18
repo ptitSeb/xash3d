@@ -74,7 +74,7 @@ void *Com_LoadLibrary( const char *dllname, int build_ordinals_table )
 	else
 #endif
 	pHandle = dlopen( dllname, RTLD_LAZY );
-#if defined(PANDORA) || defined(RPI)
+#if defined(PANDORA) || defined(RPI) || defined(ODROID)
 printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
 	if(!pHandle) {
 		char* tmp=strrchr(dllname, '/');
@@ -82,7 +82,7 @@ printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
 printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
 	}
 #endif
-#if defined(PANDORA) || defined(RPI)
+#if defined(PANDORA) || defined(RPI) || defined(ODROID)
 printf("dlopen(\"%s\", RTLD_LAZY)=%p, error=%s\n", dllname, pHandle, dlerror());
 	if(!pHandle) {
 		char* tmp=strrchr(dllname, '/');
