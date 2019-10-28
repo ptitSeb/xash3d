@@ -168,7 +168,7 @@ int synth_1to1_mono(struct StaticData * psd, struct mpstr * gmp, float *bandPtr,
 
 int synth_1to1(struct StaticData * psd, struct mpstr * gmp, float *bandPtr,int channel,unsigned char *out,int *pnt)
 {
-#if defined(PANDORA) || defined(ODROID)
+#if 0//defined(PANDORA) || defined(ODROID)
   return synth_1to1_neon(psd, gmp, bandPtr, channel, out, pnt);
 #else
   const int step = 2;
